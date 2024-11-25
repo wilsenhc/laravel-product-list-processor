@@ -52,8 +52,14 @@ class Parser extends Command implements PromptsForMissingInput
             'tsv' => (new TsvParser($filename))->toCollection(),
             // 'json' => null,
             // 'xml' => null,
-            default => (new CsvParser($filename))->toCollection(),
+            default => null,
         };
+
+        if ($products === null) {
+            $this->error(__('The file extension is not supported.'));
+
+            return static::FAILURE;
+        }
 
         $countedProducts = $products->groupBy(fn ($product) => "{$product['brand_name']}_{$product['model_name']}_{$product['colour_name']}_{$product['gb_spec_name']}_{$product['network_name']}_{$product['grade_name']}_{$product['condition_name']}")
             ->map(function ($group) {
@@ -74,7 +80,7 @@ class Parser extends Command implements PromptsForMissingInput
 
         $this->writeToCsv($countedProducts, $uniqueCombinations);
 
-        return static::FAILURE;
+        return static::SUCCESS;
     }
 
     /**
